@@ -53,6 +53,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.util.Constants;
@@ -1065,5 +1066,22 @@ public class GTUtility {
             }
         }
         return color;
+    }
+
+    public static boolean canSeeSunClearly(World world, BlockPos blockPos) {
+        if (!world.canSeeSky(blockPos.up())) {
+            return false;
+        }
+        Biome biome = world.getBiome(blockPos.up());
+        if (world.isRaining()) {
+            if (biome.canRain() || biome.getEnableSnow()) {
+                return false;
+            }
+        }
+        Set<BiomeDictionary.Type> biomeTypes = BiomeDictionary.getTypes(biome);
+        if (biomeTypes.contains(BiomeDictionary.Type.END)) {
+            return false;
+        }
+        return world.isDaytime();
     }
 }
