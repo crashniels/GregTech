@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "gregtech",
+  "version": "1.0.0",
+
+  "name": "GregTech",
+  "description": "GregTechCE for modern Fabric",
+  "authors": [
+    "GregTechCE"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/crashniels/GregTech"
+  },
+
+  "license": "LGPL-3.0",
+  "icon": "assets/gregtech/textures/gui/icon/gregtech_logo.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "gregtech.GregTechMod"
+    ]
+  },
+  "mixins": [
+    "gregtech.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.14.6",
+    "fabric": "*",
+    "minecraft": "~1.19",
+    "java": ">=17"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}

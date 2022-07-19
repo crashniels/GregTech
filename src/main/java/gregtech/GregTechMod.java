@@ -1,241 +1,254 @@
 package gregtech;
 
-import codechicken.lib.CodeChickenLib;
-import crafttweaker.CraftTweakerAPI;
-import gregtech.api.GTValues;
-import gregtech.api.GregTechAPI;
-import gregtech.api.block.IHeatingCoilBlockStats;
-import gregtech.api.capability.SimpleCapabilityManager;
-import gregtech.api.cover.CoverBehaviorUIFactory;
-import gregtech.api.cover.CoverDefinition;
-import gregtech.api.fluids.MetaFluids;
-import gregtech.api.gui.UIFactory;
-import gregtech.api.items.gui.PlayerInventoryUIFactory;
-import gregtech.api.metatileentity.MetaTileEntityUIFactory;
-import gregtech.api.net.NetworkHandler;
-import gregtech.api.recipes.RecipeMap;
-import gregtech.api.recipes.recipeproperties.TemperatureProperty;
-import gregtech.api.sound.GTSounds;
-import gregtech.api.unification.OreDictUnifier;
-import gregtech.api.unification.material.Materials;
-import gregtech.api.util.CapesRegistry;
-import gregtech.api.util.GTLog;
-import gregtech.api.util.NBTUtil;
-import gregtech.api.util.VirtualTankRegistry;
-import gregtech.api.util.input.KeyBind;
-import gregtech.api.worldgen.bedrockFluids.BedrockFluidVeinHandler;
-import gregtech.api.worldgen.bedrockFluids.BedrockFluidVeinSaveData;
-import gregtech.api.worldgen.config.WorldGenRegistry;
-import gregtech.client.utils.BloomEffectUtil;
-import gregtech.common.CommonProxy;
-import gregtech.common.ConfigHolder;
-import gregtech.common.MetaEntities;
-import gregtech.common.blocks.BlockWireCoil;
-import gregtech.common.blocks.MetaBlocks;
-import gregtech.common.command.GregTechCommand;
-import gregtech.common.covers.CoverBehaviors;
-import gregtech.common.covers.filter.FilterTypeRegistry;
-import gregtech.common.items.MetaItems;
-import gregtech.common.metatileentities.MetaTileEntities;
-import gregtech.common.worldgen.LootTableHelper;
-import gregtech.integration.theoneprobe.TheOneProbeCompatibility;
-import gregtech.loaders.dungeon.DungeonLootLoader;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.world.World;
-import net.minecraftforge.classloading.FMLForgePlugin;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fluids.FluidRegistry;
-import net.minecraftforge.fml.common.*;
-import net.minecraftforge.fml.common.Optional.Method;
-import net.minecraftforge.fml.common.event.*;
-import net.minecraftforge.fml.relauncher.Side;
+// import codechicken.lib.CodeChickenLib;
+// import crafttweaker.CraftTweakerAPI;
+// import gregtech.api.GTValues;
+// import gregtech.api.GregTechAPI;
+// import gregtech.api.block.IHeatingCoilBlockStats;
+// import gregtech.api.capability.SimpleCapabilityManager;
+// import gregtech.api.cover.CoverBehaviorUIFactory;
+// import gregtech.api.cover.CoverDefinition;
+// import gregtech.api.fluids.MetaFluids;
+// import gregtech.api.gui.UIFactory;
+// import gregtech.api.items.gui.PlayerInventoryUIFactory;
+// import gregtech.api.metatileentity.MetaTileEntityUIFactory;
+// import gregtech.api.net.NetworkHandler;
+// import gregtech.api.recipes.RecipeMap;
+// import gregtech.api.recipes.recipeproperties.TemperatureProperty;
+// import gregtech.api.sound.GTSounds;
+// import gregtech.api.unification.OreDictUnifier;
+// import gregtech.api.unification.material.Materials;
+// import gregtech.api.util.CapesRegistry;
+// import gregtech.api.util.GTLog;
+// import gregtech.api.util.NBTUtil;
+// import gregtech.api.util.VirtualTankRegistry;
+// import gregtech.api.util.input.KeyBind;
+// import gregtech.api.worldgen.bedrockFluids.BedrockFluidVeinHandler;
+// import gregtech.api.worldgen.bedrockFluids.BedrockFluidVeinSaveData;
+// import gregtech.api.worldgen.config.WorldGenRegistry;
+// import gregtech.client.utils.BloomEffectUtil;
+// import gregtech.common.CommonProxy;
+// import gregtech.common.ConfigHolder;
+// import gregtech.common.MetaEntities;
+// import gregtech.common.blocks.BlockWireCoil;
+// import gregtech.common.blocks.MetaBlocks;
+// import gregtech.common.command.GregTechCommand;
+// import gregtech.common.covers.CoverBehaviors;
+// import gregtech.common.covers.filter.FilterTypeRegistry;
+// import gregtech.common.items.MetaItems;
+// import gregtech.common.metatileentities.MetaTileEntities;
+// import gregtech.common.worldgen.LootTableHelper;
+// import gregtech.integration.theoneprobe.TheOneProbeCompatibility;
+// import gregtech.loaders.dungeon.DungeonLootLoader;
+// import net.fabricmc.api.ModInitializer;
+// import net.minecraft.block.state.IBlockState;
+// import net.minecraft.world.World;
+// import net.minecraftforge.classloading.FMLForgePlugin;
+// import net.minecraftforge.common.MinecraftForge;
+// import net.minecraftforge.fluids.FluidRegistry;
+// import net.minecraftforge.fml.common.*;
+// import net.minecraftforge.fml.common.Optional.Method;
+// import net.minecraftforge.fml.common.event.*;
+// import net.minecraftforge.fml.relauncher.Side;
 
 import java.util.Map;
 
-import static gregtech.api.GregTechAPI.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Mod(modid = GTValues.MODID,
-        name = "GregTech",
-        acceptedMinecraftVersions = "[1.12,1.13)",
-        dependencies = "required:forge@[14.23.5.2847,);" + CodeChickenLib.MOD_VERSION_DEP + "after:forestry;after:jei@[4.15.0,);after:crafttweaker")
-public class GregTechMod {
+import net.fabricmc.api.ModInitializer;
 
-    static {
-        FluidRegistry.enableUniversalBucket();
-        if (FMLCommonHandler.instance().getSide().isClient()) {
-            BloomEffectUtil.init();
-        }
+// import static gregtech.api.GregTechAPI.*;
+
+public class GregTechMod implements ModInitializer {
+
+    public static final Logger LOGGER = LoggerFactory.getLogger("modid");
+
+	@Override
+	public void onInitialize() {
+		// This code runs as soon as Minecraft is in a mod-load-ready state.
+		// However, some things (like resources) may still be uninitialized.
+		// Proceed with mild caution.
+
+		LOGGER.info("Hello Fabric world!");
     }
 
-    @Mod.Instance(GTValues.MODID)
-    public static GregTechMod instance;
+    // static {
+    //     FluidRegistry.enableUniversalBucket();
+    //     if (FMLCommonHandler.instance().getSide().isClient()) {
+    //         BloomEffectUtil.init();
+    //     }
+    // }
 
-    @SidedProxy(modId = GTValues.MODID, clientSide = "gregtech.client.ClientProxy", serverSide = "gregtech.common.CommonProxy")
-    public static CommonProxy proxy;
+    // @Mod.Instance(GTValues.MODID)
+    // public static GregTechMod instance;
 
-    @Mod.EventHandler
-    public void onPreInit(FMLPreInitializationEvent event) {
-        NetworkHandler.init();
+    // @SidedProxy(modId = GTValues.MODID, clientSide = "gregtech.client.ClientProxy", serverSide = "gregtech.common.CommonProxy")
+    // public static CommonProxy proxy;
 
-        /* Start UI Factory Registration */
-        UI_FACTORY_REGISTRY.unfreeze();
-        GTLog.logger.info("Registering GTCEu UI Factories");
-        MetaTileEntityUIFactory.INSTANCE.init();
-        PlayerInventoryUIFactory.INSTANCE.init();
-        CoverBehaviorUIFactory.INSTANCE.init();
-        GTLog.logger.info("Registering addon UI Factories");
-        MinecraftForge.EVENT_BUS.post(new RegisterEvent<>(UI_FACTORY_REGISTRY, UIFactory.class));
-        UI_FACTORY_REGISTRY.freeze();
-        /* End UI Factory Registration */
+    // @Mod.EventHandler
+    // public void onPreInit(FMLPreInitializationEvent event) {
+    //     NetworkHandler.init();
 
-        SimpleCapabilityManager.init();
+    //     /* Start UI Factory Registration */
+    //     UI_FACTORY_REGISTRY.unfreeze();
+    //     GTLog.logger.info("Registering GTCEu UI Factories");
+    //     MetaTileEntityUIFactory.INSTANCE.init();
+    //     PlayerInventoryUIFactory.INSTANCE.init();
+    //     CoverBehaviorUIFactory.INSTANCE.init();
+    //     GTLog.logger.info("Registering addon UI Factories");
+    //     MinecraftForge.EVENT_BUS.post(new RegisterEvent<>(UI_FACTORY_REGISTRY, UIFactory.class));
+    //     UI_FACTORY_REGISTRY.freeze();
+    //     /* End UI Factory Registration */
 
-        /* Start Material Registration */
+    //     SimpleCapabilityManager.init();
 
-        // First, register CEu Materials
-        MATERIAL_REGISTRY.unfreeze();
-        GTLog.logger.info("Registering GTCEu Materials");
-        Materials.register();
+    //     /* Start Material Registration */
 
-        // Then, register addon Materials
-        GTLog.logger.info("Registering addon Materials");
-        MinecraftForge.EVENT_BUS.post(new MaterialEvent());
+    //     // First, register CEu Materials
+    //     MATERIAL_REGISTRY.unfreeze();
+    //     GTLog.logger.info("Registering GTCEu Materials");
+    //     Materials.register();
 
-        // Then, run CraftTweaker Material registration scripts
-        if (Loader.isModLoaded(GTValues.MODID_CT)) {
-            GTLog.logger.info("Running early CraftTweaker initialization scripts...");
-            runEarlyCraftTweakerScripts();
-            MinecraftForge.EVENT_BUS.register(this);
-        }
+    //     // Then, register addon Materials
+    //     GTLog.logger.info("Registering addon Materials");
+    //     MinecraftForge.EVENT_BUS.post(new MaterialEvent());
 
-        // Fire Post-Material event, intended for when Materials need to be iterated over in-full before freezing
-        // Block entirely new Materials from being added in the Post event
-        MATERIAL_REGISTRY.closeRegistry();
-        MinecraftForge.EVENT_BUS.post(new PostMaterialEvent());
+    //     // Then, run CraftTweaker Material registration scripts
+    //     if (Loader.isModLoaded(GTValues.MODID_CT)) {
+    //         GTLog.logger.info("Running early CraftTweaker initialization scripts...");
+    //         runEarlyCraftTweakerScripts();
+    //         MinecraftForge.EVENT_BUS.register(this);
+    //     }
 
-        // Freeze Material Registry before processing Items, Blocks, and Fluids
-        MATERIAL_REGISTRY.freeze();
-        /* End Material Registration */
+    //     // Fire Post-Material event, intended for when Materials need to be iterated over in-full before freezing
+    //     // Block entirely new Materials from being added in the Post event
+    //     MATERIAL_REGISTRY.closeRegistry();
+    //     MinecraftForge.EVENT_BUS.post(new PostMaterialEvent());
 
-        OreDictUnifier.init();
-        NBTUtil.registerSerializers();
+    //     // Freeze Material Registry before processing Items, Blocks, and Fluids
+    //     MATERIAL_REGISTRY.freeze();
+    //     /* End Material Registration */
 
-        MetaBlocks.init();
-        MetaItems.init();
-        MetaFluids.init();
+    //     OreDictUnifier.init();
+    //     NBTUtil.registerSerializers();
 
-        GTSounds.registerSounds();
+    //     MetaBlocks.init();
+    //     MetaItems.init();
+    //     MetaFluids.init();
 
-        /* Start MetaTileEntity Registration */
-        MTE_REGISTRY.unfreeze();
-        GTLog.logger.info("Registering GTCEu Meta Tile Entities");
-        MetaTileEntities.init();
-        /* End CEu MetaTileEntity Registration */
-        /* Addons not done via an Event due to how much must be initialized for MTEs to register */
+    //     GTSounds.registerSounds();
 
-        MetaEntities.init();
+    //     /* Start MetaTileEntity Registration */
+    //     MTE_REGISTRY.unfreeze();
+    //     GTLog.logger.info("Registering GTCEu Meta Tile Entities");
+    //     MetaTileEntities.init();
+    //     /* End CEu MetaTileEntity Registration */
+    //     /* Addons not done via an Event due to how much must be initialized for MTEs to register */
 
-        /* Start Heating Coil Registration */
-        for (BlockWireCoil.CoilType type : BlockWireCoil.CoilType.values()) {
-            HEATING_COILS.put(MetaBlocks.WIRE_COIL.getState(type), type);
-            HEATING_COILS.put(MetaBlocks.WIRE_COIL.getState(type, true), type);
-        }
-        /* End Heating Coil Registration */
+    //     MetaEntities.init();
 
-        proxy.onPreLoad();
-        KeyBind.init();
-    }
+    //     /* Start Heating Coil Registration */
+    //     for (BlockWireCoil.CoilType type : BlockWireCoil.CoilType.values()) {
+    //         HEATING_COILS.put(MetaBlocks.WIRE_COIL.getState(type), type);
+    //         HEATING_COILS.put(MetaBlocks.WIRE_COIL.getState(type, true), type);
+    //     }
+    //     /* End Heating Coil Registration */
 
-    @Mod.EventHandler
-    public void onInit(FMLInitializationEvent event) {
-        MTE_REGISTRY.freeze(); // freeze once addon preInit is finished
-        proxy.onLoad();
-        if (RecipeMap.isFoundInvalidRecipe()) {
-            GTLog.logger.fatal("Seems like invalid recipe was found.");
-            //crash if config setting is set to false, or we are in deobfuscated environment
-            if (!ConfigHolder.misc.ignoreErrorOrInvalidRecipes || !FMLForgePlugin.RUNTIME_DEOBF) {
-                GTLog.logger.fatal("Loading cannot continue. Either fix or report invalid recipes, or enable ignoreErrorOrInvalidRecipes in the config as a temporary solution");
-                throw new LoaderException("Found at least one invalid recipe. Please read the log above for more details.");
-            } else {
-                GTLog.logger.fatal("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-                GTLog.logger.fatal("Ignoring invalid recipes and continuing loading");
-                GTLog.logger.fatal("Some things may lack recipes or have invalid ones, proceed at your own risk");
-                GTLog.logger.fatal("Report to GTCEu GitHub to get more help and fix the problem");
-                GTLog.logger.fatal("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            }
-        }
+    //     proxy.onPreLoad();
+    //     KeyBind.init();
+    // }
 
-        if (Loader.isModLoaded(GTValues.MODID_TOP)) {
-            GTLog.logger.info("TheOneProbe found. Enabling integration...");
-            TheOneProbeCompatibility.registerCompatibility();
-        }
+    // @Mod.EventHandler
+    // public void onInit(FMLInitializationEvent event) {
+    //     MTE_REGISTRY.freeze(); // freeze once addon preInit is finished
+    //     proxy.onLoad();
+    //     if (RecipeMap.isFoundInvalidRecipe()) {
+    //         GTLog.logger.fatal("Seems like invalid recipe was found.");
+    //         //crash if config setting is set to false, or we are in deobfuscated environment
+    //         if (!ConfigHolder.misc.ignoreErrorOrInvalidRecipes || !FMLForgePlugin.RUNTIME_DEOBF) {
+    //             GTLog.logger.fatal("Loading cannot continue. Either fix or report invalid recipes, or enable ignoreErrorOrInvalidRecipes in the config as a temporary solution");
+    //             throw new LoaderException("Found at least one invalid recipe. Please read the log above for more details.");
+    //         } else {
+    //             GTLog.logger.fatal("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+    //             GTLog.logger.fatal("Ignoring invalid recipes and continuing loading");
+    //             GTLog.logger.fatal("Some things may lack recipes or have invalid ones, proceed at your own risk");
+    //             GTLog.logger.fatal("Report to GTCEu GitHub to get more help and fix the problem");
+    //             GTLog.logger.fatal("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+    //         }
+    //     }
 
-        WorldGenRegistry.INSTANCE.initializeRegistry();
+    //     if (Loader.isModLoaded(GTValues.MODID_TOP)) {
+    //         GTLog.logger.info("TheOneProbe found. Enabling integration...");
+    //         TheOneProbeCompatibility.registerCompatibility();
+    //     }
 
-        LootTableHelper.initialize();
-        FilterTypeRegistry.init();
+    //     WorldGenRegistry.INSTANCE.initializeRegistry();
 
-        /* Start Cover Definition Registration */
-        COVER_REGISTRY.unfreeze();
-        CoverBehaviors.init();
-        MinecraftForge.EVENT_BUS.post(new RegisterEvent<>(COVER_REGISTRY, CoverDefinition.class));
-        COVER_REGISTRY.freeze();
-        /* End Cover Definition Registration */
+    //     LootTableHelper.initialize();
+    //     FilterTypeRegistry.init();
 
-        DungeonLootLoader.init();
-    }
+    //     /* Start Cover Definition Registration */
+    //     COVER_REGISTRY.unfreeze();
+    //     CoverBehaviors.init();
+    //     MinecraftForge.EVENT_BUS.post(new RegisterEvent<>(COVER_REGISTRY, CoverDefinition.class));
+    //     COVER_REGISTRY.freeze();
+    //     /* End Cover Definition Registration */
 
-    @Method(modid = GTValues.MODID_CT)
-    private void runEarlyCraftTweakerScripts() {
-        CraftTweakerAPI.tweaker.loadScript(false, "gregtech");
-    }
+    //     DungeonLootLoader.init();
+    // }
 
-    @Mod.EventHandler
-    public void onPostInit(FMLPostInitializationEvent event) {
-        proxy.onPostLoad();
-        BedrockFluidVeinHandler.recalculateChances(true);
-        // registers coil types for the BlastTemperatureProperty used in Blast Furnace Recipes
-        // runs AFTER craftTweaker
-        for (Map.Entry<IBlockState, IHeatingCoilBlockStats> entry : GregTechAPI.HEATING_COILS.entrySet()) {
-            IHeatingCoilBlockStats value = entry.getValue();
-            if (value != null) {
-                String name = entry.getKey().getBlock().getTranslationKey();
-                if (!name.endsWith(".name")) name = String.format("%s.name", name);
-                TemperatureProperty.registerCoilType(value.getCoilTemperature(), value.getMaterial(), name);
-            }
-        }
-    }
+    // @Method(modid = GTValues.MODID_CT)
+    // private void runEarlyCraftTweakerScripts() {
+    //     CraftTweakerAPI.tweaker.loadScript(false, "gregtech");
+    // }
 
-    @Mod.EventHandler
-    public void loadComplete(FMLLoadCompleteEvent event) {
-        proxy.onLoadComplete(event);
-    }
+    // @Mod.EventHandler
+    // public void onPostInit(FMLPostInitializationEvent event) {
+    //     proxy.onPostLoad();
+    //     BedrockFluidVeinHandler.recalculateChances(true);
+    //     // registers coil types for the BlastTemperatureProperty used in Blast Furnace Recipes
+    //     // runs AFTER craftTweaker
+    //     for (Map.Entry<IBlockState, IHeatingCoilBlockStats> entry : GregTechAPI.HEATING_COILS.entrySet()) {
+    //         IHeatingCoilBlockStats value = entry.getValue();
+    //         if (value != null) {
+    //             String name = entry.getKey().getBlock().getTranslationKey();
+    //             if (!name.endsWith(".name")) name = String.format("%s.name", name);
+    //             TemperatureProperty.registerCoilType(value.getCoilTemperature(), value.getMaterial(), name);
+    //         }
+    //     }
+    // }
 
-    @Mod.EventHandler
-    public void onServerLoad(FMLServerStartingEvent event) {
-        event.registerServerCommand(new GregTechCommand());
-        CapesRegistry.load();
-    }
+    // @Mod.EventHandler
+    // public void loadComplete(FMLLoadCompleteEvent event) {
+    //     proxy.onLoadComplete(event);
+    // }
 
-    @Mod.EventHandler
-    public void onServerStarted(FMLServerStartedEvent event) {
-        if (FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER) {
-            World world = FMLCommonHandler.instance().getMinecraftServerInstance().getEntityWorld();
-            if (!world.isRemote) {
-                BedrockFluidVeinSaveData saveData = (BedrockFluidVeinSaveData) world.loadData(BedrockFluidVeinSaveData.class, BedrockFluidVeinSaveData.dataName);
-                if (saveData == null) {
-                    saveData = new BedrockFluidVeinSaveData(BedrockFluidVeinSaveData.dataName);
-                    world.setData(BedrockFluidVeinSaveData.dataName, saveData);
-                }
-                BedrockFluidVeinSaveData.setInstance(saveData);
-            }
-        }
-    }
+    // @Mod.EventHandler
+    // public void onServerLoad(FMLServerStartingEvent event) {
+    //     event.registerServerCommand(new GregTechCommand());
+    //     CapesRegistry.load();
+    // }
 
-    @Mod.EventHandler
-    public static void onServerStopped(FMLServerStoppedEvent event) {
-        VirtualTankRegistry.clearMaps();
-        CapesRegistry.clearMaps();
-    }
+    // @Mod.EventHandler
+    // public void onServerStarted(FMLServerStartedEvent event) {
+    //     if (FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER) {
+    //         World world = FMLCommonHandler.instance().getMinecraftServerInstance().getEntityWorld();
+    //         if (!world.isRemote) {
+    //             BedrockFluidVeinSaveData saveData = (BedrockFluidVeinSaveData) world.loadData(BedrockFluidVeinSaveData.class, BedrockFluidVeinSaveData.dataName);
+    //             if (saveData == null) {
+    //                 saveData = new BedrockFluidVeinSaveData(BedrockFluidVeinSaveData.dataName);
+    //                 world.setData(BedrockFluidVeinSaveData.dataName, saveData);
+    //             }
+    //             BedrockFluidVeinSaveData.setInstance(saveData);
+    //         }
+    //     }
+    // }
+
+    // @Mod.EventHandler
+    // public static void onServerStopped(FMLServerStoppedEvent event) {
+    //     VirtualTankRegistry.clearMaps();
+    //     CapesRegistry.clearMaps();
+    // }
 
 }
