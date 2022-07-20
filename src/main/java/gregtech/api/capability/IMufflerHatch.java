@@ -1,8 +1,9 @@
 package gregtech.api.capability;
 
-import net.minecraft.item.ItemStack;
 
 import java.util.List;
+
+import net.minecraft.world.item.ItemStack;
 
 public interface IMufflerHatch {
 

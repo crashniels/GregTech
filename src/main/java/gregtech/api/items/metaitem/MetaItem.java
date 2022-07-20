@@ -26,26 +26,25 @@ import it.unimi.dsi.fastutil.shorts.Short2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.model.ModelBakery;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.EnumAction;
-import net.minecraft.item.EnumRarity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.*;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fluids.FluidStack;
@@ -156,7 +155,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
         T metaValueItem = getItem(itemStack);
 
         // Electric Items
-        IElectricItem electricItem = itemStack.getCapability(GregtechCapabilities.CAPABILITY_ELECTRIC_ITEM, null);
+        IElectricItem electricItem = GregtechCapabilities.CAPABILITY_ELECTRIC_ITEM.find(itemStack, null);
         if (electricItem != null) {
             return (int) Math.min(((electricItem.getCharge() / (electricItem.getMaxCharge() * 1.0)) * 7), 7);
         }
@@ -211,7 +210,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
     @Nonnull
     @Override
     @SuppressWarnings("deprecation")
-    public EnumRarity getRarity(@Nonnull ItemStack stack) {
+    public Rarity getRarity(@Nonnull ItemStack stack) {
         T metaValueItem = getItem(stack);
         if (metaValueItem != null && metaValueItem.getRarity() != null) return metaValueItem.getRarity();
         else return super.getRarity(stack);
@@ -244,7 +243,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
     }
 
     public final T getItem(ItemStack itemStack) {
-        return getItem((short) (itemStack.getItemDamage() - metaItemOffset));
+        return getItem((short) (itemStack.getMaxDamage() - metaItemOffset));
     }
 
     protected short formatRawItemDamage(short metaValue) {
@@ -331,38 +330,38 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
 
     @Override
     public void onUsingTick(@Nonnull ItemStack stack, @Nonnull EntityLivingBase player, int count) {
-        if (player instanceof EntityPlayer) {
+        if (player instanceof Player) {
             IItemUseManager useManager = getUseManager(stack);
             if (useManager != null) {
-                useManager.onItemUsingTick(stack, (EntityPlayer) player, count);
+                useManager.onItemUsingTick(stack, (Player) player, count);
             }
         }
     }
 
     @Override
-    public void onPlayerStoppedUsing(@Nonnull ItemStack stack, @Nonnull World world, @Nonnull EntityLivingBase player, int timeLeft) {
-        if (player instanceof EntityPlayer) {
+    public void onPlayerStoppedUsing(@Nonnull ItemStack stack, @Nonnull Level world, @Nonnull EntityLivingBase player, int timeLeft) {
+        if (player instanceof Player) {
             IItemUseManager useManager = getUseManager(stack);
             if (useManager != null) {
-                useManager.onPlayerStoppedItemUsing(stack, (EntityPlayer) player, timeLeft);
+                useManager.onPlayerStoppedItemUsing(stack, (Player) player, timeLeft);
             }
         }
     }
 
     @Nullable
     @Override
-    public ItemStack onItemUseFinish(@Nonnull ItemStack stack, @Nonnull World world, @Nonnull EntityLivingBase player) {
-        if (player instanceof EntityPlayer) {
+    public ItemStack onItemUseFinish(@Nonnull ItemStack stack, @Nonnull Level world, @Nonnull EntityLivingBase player) {
+        if (player instanceof Player) {
             IItemUseManager useManager = getUseManager(stack);
             if (useManager != null) {
-                return useManager.onItemUseFinish(stack, (EntityPlayer) player);
+                return useManager.onItemUseFinish(stack, (Player) player);
             }
         }
         return stack;
     }
 
     @Override
-    public boolean onLeftClickEntity(@Nonnull ItemStack stack, @Nonnull EntityPlayer player, @Nonnull Entity entity) {
+    public boolean onLeftClickEntity(@Nonnull ItemStack stack, @Nonnull Player player, @Nonnull Entity entity) {
         boolean returnValue = false;
         for (IItemBehaviour behaviour : getBehaviours(stack)) {
             if (behaviour.onLeftClickEntity(stack, player, entity)) {
@@ -373,7 +372,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
     }
 
     @Override
-    public boolean itemInteractionForEntity(@Nonnull ItemStack stack, @Nonnull EntityPlayer playerIn, @Nonnull EntityLivingBase target, @Nonnull EnumHand hand) {
+    public boolean itemInteractionForEntity(@Nonnull ItemStack stack, @Nonnull Player playerIn, @Nonnull EntityLivingBase target, @Nonnull EnumHand hand) {
         boolean returnValue = false;
         for (IItemBehaviour behaviour : getBehaviours(stack)) {
             if (behaviour.itemInteractionForEntity(stack, playerIn, target, hand)) {
@@ -385,7 +384,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
 
     @Nonnull
     @Override
-    public ActionResult<ItemStack> onItemRightClick(@Nonnull World world, EntityPlayer player, @Nonnull EnumHand hand) {
+    public ActionResult<ItemStack> onItemRightClick(@Nonnull Level world, Player player, @Nonnull EnumHand hand) {
         ItemStack itemStack = player.getHeldItem(hand);
         for (IItemBehaviour behaviour : getBehaviours(itemStack)) {
             ActionResult<ItemStack> behaviourResult = behaviour.onItemRightClick(world, player, hand);
@@ -407,7 +406,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
 
     @Nonnull
     @Override
-    public EnumActionResult onItemUseFirst(EntityPlayer player, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull EnumFacing side, float hitX, float hitY, float hitZ, @Nonnull EnumHand hand) {
+    public EnumActionResult onItemUseFirst(Player player, @Nonnull Level world, @Nonnull BlockPos pos, @Nonnull EnumFacing side, float hitX, float hitY, float hitZ, @Nonnull EnumHand hand) {
         ItemStack itemStack = player.getHeldItem(hand);
         for (IItemBehaviour behaviour : getBehaviours(itemStack)) {
             EnumActionResult behaviourResult = behaviour.onItemUseFirst(player, world, pos, side, hitX, hitY, hitZ, hand);
@@ -422,7 +421,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
 
     @Nonnull
     @Override
-    public EnumActionResult onItemUse(EntityPlayer player, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull EnumHand hand, @Nonnull EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public EnumActionResult onItemUse(Player player, @Nonnull Level world, @Nonnull BlockPos pos, @Nonnull EnumHand hand, @Nonnull EnumFacing facing, float hitX, float hitY, float hitZ) {
         ItemStack stack = player.getHeldItem(hand);
         ItemStack originalStack = stack.copy();
         for (IItemBehaviour behaviour : getBehaviours(stack)) {
@@ -484,7 +483,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
     }
 
     @Override
-    public void onUpdate(@Nonnull ItemStack stack, @Nonnull World worldIn, @Nonnull Entity entityIn, int itemSlot, boolean isSelected) {
+    public void onUpdate(@Nonnull ItemStack stack, @Nonnull Level worldIn, @Nonnull Entity entityIn, int itemSlot, boolean isSelected) {
         for (IItemBehaviour behaviour : getBehaviours(stack)) {
             behaviour.onUpdate(stack, entityIn);
         }
@@ -540,7 +539,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void addInformation(@Nonnull ItemStack itemStack, @Nullable World worldIn, @Nonnull List<String> lines, @Nonnull ITooltipFlag tooltipFlag) {
+    public void addInformation(@Nonnull ItemStack itemStack, @Nullable Level worldIn, @Nonnull List<String> lines, @Nonnull TooltipFlag tooltipFlag) {
         T item = getItem(itemStack);
         if (item == null) return;
         String unlocalizedTooltip = "metaitem." + item.unlocalizedName + ".tooltip";
@@ -548,7 +547,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
             lines.addAll(Arrays.asList(I18n.format(unlocalizedTooltip).split("/n")));
         }
 
-        IElectricItem electricItem = itemStack.getCapability(GregtechCapabilities.CAPABILITY_ELECTRIC_ITEM, null);
+        IElectricItem electricItem = GregtechCapabilities.CAPABILITY_ELECTRIC_ITEM.find(itemStack, null);
         if (electricItem != null) {
             if (electricItem.canProvideChargeExternally()) {
                 addDischargeItemTooltip(lines, electricItem.getMaxCharge(), electricItem.getCharge(), electricItem.getTier());
@@ -645,14 +644,14 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
 
     @Nonnull
     @Override
-    public CreativeTabs[] getCreativeTabs() {
-        return new CreativeTabs[]{GregTechAPI.TAB_GREGTECH, GregTechAPI.TAB_GREGTECH_MATERIALS};
+    public CreativeModeTab[] getCreativeTabs() {
+        return new CreativeModeTab[]{GregTechAPI.TAB_GREGTECH, GregTechAPI.TAB_GREGTECH_MATERIALS};
     }
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void getSubItems(@Nonnull CreativeTabs tab, @Nonnull NonNullList<ItemStack> subItems) {
-        if (tab != GregTechAPI.TAB_GREGTECH && tab != CreativeTabs.SEARCH) {
+    public void getSubItems(@Nonnull CreativeModeTab tab, @Nonnull NonNullList<ItemStack> subItems) {
+        if (tab != GregTechAPI.TAB_GREGTECH && tab != CreativeModeTab.SEARCH) {
             return;
         }
         for (T enabledItem : metaItems.values()) {
@@ -664,7 +663,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
     }
 
     @Override
-    public ModularUI createUI(PlayerInventoryHolder holder, EntityPlayer entityPlayer) {
+    public ModularUI createUI(PlayerInventoryHolder holder, Player entityPlayer) {
         ItemStack itemStack = holder.getCurrentItem();
         T metaValueItem = getItem(itemStack);
         ItemUIFactory uiFactory = metaValueItem == null ? null : metaValueItem.getUIManager();
@@ -692,7 +691,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
         private IItemColorProvider colorProvider;
         private IItemDurabilityManager durabilityManager;
         private IEnchantabilityHelper enchantabilityHelper;
-        private EnumRarity rarity;
+        private Rarity rarity;
 
         private int burnValue = 0;
         private boolean visible = true;
@@ -775,7 +774,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
             return this;
         }
 
-        public MetaValueItem setRarity(EnumRarity rarity) {
+        public MetaValueItem setRarity(Rarity rarity) {
             this.rarity = rarity;
             return this;
         }
@@ -892,7 +891,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
             return modelAmount;
         }
 
-        public EnumRarity getRarity() {
+        public Rarity getRarity() {
             return rarity;
         }
 
@@ -901,7 +900,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
         }
 
         public boolean isItemEqual(ItemStack itemStack) {
-            return itemStack.getItem() == MetaItem.this && itemStack.getItemDamage() == (metaItemOffset + metaValue);
+            return itemStack.getItem() == MetaItem.this && itemStack.getMaxDamage() == (metaItemOffset + metaValue);
         }
 
         public ItemStack getStackForm() {
@@ -917,7 +916,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
          */
         public ItemStack getChargedStack(long chargeAmount) {
             ItemStack itemStack = getStackForm(1);
-            IElectricItem electricItem = itemStack.getCapability(GregtechCapabilities.CAPABILITY_ELECTRIC_ITEM, null);
+            IElectricItem electricItem = GregtechCapabilities.CAPABILITY_ELECTRIC_ITEM.find(itemStack, null);
             if (electricItem == null) {
                 throw new IllegalStateException("Not an electric item.");
             }
@@ -927,7 +926,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
 
         public ItemStack getInfiniteChargedStack() {
             ItemStack itemStack = getStackForm(1);
-            IElectricItem electricItem = itemStack.getCapability(GregtechCapabilities.CAPABILITY_ELECTRIC_ITEM, null);
+            IElectricItem electricItem = GregtechCapabilities.CAPABILITY_ELECTRIC_ITEM.find(itemStack, null);
             if (!(electricItem instanceof ElectricItem)) {
                 throw new IllegalStateException("Not a supported electric item.");
             }
@@ -944,7 +943,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
          */
         public ItemStack getMaxChargeOverrideStack(long maxCharge) {
             ItemStack itemStack = getStackForm(1);
-            IElectricItem electricItem = itemStack.getCapability(GregtechCapabilities.CAPABILITY_ELECTRIC_ITEM, null);
+            IElectricItem electricItem = GregtechCapabilities.CAPABILITY_ELECTRIC_ITEM.find(itemStack, null);
             if (electricItem == null) {
                 throw new IllegalStateException("Not an electric item.");
             }
@@ -957,7 +956,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
 
         public ItemStack getChargedStackWithOverride(IElectricItem source) {
             ItemStack itemStack = getStackForm(1);
-            IElectricItem electricItem = itemStack.getCapability(GregtechCapabilities.CAPABILITY_ELECTRIC_ITEM, null);
+            IElectricItem electricItem = GregtechCapabilities.CAPABILITY_ELECTRIC_ITEM.find(itemStack, null);
             if (electricItem == null) {
                 throw new IllegalStateException("Not an electric item.");
             }

@@ -23,12 +23,14 @@ import gregtech.common.items.behaviors.monitorplugin.AdvancedMonitorPluginBehavi
 import gregtech.common.items.behaviors.monitorplugin.FakeGuiPluginBehavior;
 import gregtech.common.items.behaviors.monitorplugin.OnlinePicPluginBehavior;
 import gregtech.common.items.behaviors.monitorplugin.TextPluginBehavior;
-import net.minecraft.init.Items;
-import net.minecraft.init.MobEffects;
-import net.minecraft.item.EnumDyeColor;
-import net.minecraft.item.EnumRarity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.alchemy.Potions;
 
 import static gregtech.api.GTValues.M;
 import static gregtech.api.util.DyeUtil.getOredictColorName;
@@ -45,20 +47,20 @@ public class MetaItem1 extends StandardMetaItem {
         // Credits: ID 0-10
         CREDIT_COPPER = addItem(0, "credit.copper");
         CREDIT_CUPRONICKEL = addItem(1, "credit.cupronickel");
-        CREDIT_SILVER = addItem(2, "credit.silver").setRarity(EnumRarity.UNCOMMON);
-        CREDIT_GOLD = addItem(3, "credit.gold").setRarity(EnumRarity.UNCOMMON);
-        CREDIT_PLATINUM = addItem(4, "credit.platinum").setRarity(EnumRarity.RARE);
-        CREDIT_OSMIUM = addItem(5, "credit.osmium").setRarity(EnumRarity.RARE);
-        CREDIT_NAQUADAH = addItem(6, "credit.naquadah").setRarity(EnumRarity.EPIC);
-        CREDIT_NEUTRONIUM = addItem(7, "credit.neutronium").setRarity(EnumRarity.EPIC);
+        CREDIT_SILVER = addItem(2, "credit.silver").setRarity(Rarity.UNCOMMON);
+        CREDIT_GOLD = addItem(3, "credit.gold").setRarity(Rarity.UNCOMMON);
+        CREDIT_PLATINUM = addItem(4, "credit.platinum").setRarity(Rarity.RARE);
+        CREDIT_OSMIUM = addItem(5, "credit.osmium").setRarity(Rarity.RARE);
+        CREDIT_NAQUADAH = addItem(6, "credit.naquadah").setRarity(Rarity.EPIC);
+        CREDIT_NEUTRONIUM = addItem(7, "credit.neutronium").setRarity(Rarity.EPIC);
 
         COIN_GOLD_ANCIENT = addItem(8, "coin.gold.ancient")
-                .setMaterialInfo(new ItemMaterialInfo(new MaterialStack(Materials.Gold, M / 4))).setRarity(EnumRarity.RARE);
+                .setMaterialInfo(new ItemMaterialInfo(new MaterialStack(Materials.Gold, M / 4))).setRarity(Rarity.RARE);
         COIN_DOGE = addItem(9, "coin.doge")
-                .setMaterialInfo(new ItemMaterialInfo(new MaterialStack(Materials.Brass, M / 4))).setRarity(EnumRarity.EPIC);
+                .setMaterialInfo(new ItemMaterialInfo(new MaterialStack(Materials.Brass, M / 4))).setRarity(Rarity.EPIC);
         COIN_CHOCOLATE = addItem(10, "coin.chocolate")
                 .setMaterialInfo(new ItemMaterialInfo(new MaterialStack(Materials.Gold, M / 4)))
-                .addComponents(new FoodStats(1, 0.1F, false, true, OreDictUnifier.get(OrePrefix.foil, Materials.Gold), new RandomPotionEffect(MobEffects.SPEED, 200, 1, 10)));
+                .addComponents(new FoodStats(1, 0.1F, false, true, OreDictUnifier.get(OrePrefix.foil, Materials.Gold), new RandomPotionEffect(Potions.MOVEMENT_SPEED, 200, 1, 10)));
 
         // Solidifier Shapes: ID 11-30
         SHAPE_EMPTY = addItem(11, "shape.empty").setMaterialInfo(new ItemMaterialInfo(new MaterialStack(Materials.Steel, M * 4)));
@@ -114,8 +116,8 @@ public class MetaItem1 extends StandardMetaItem {
         SPRAY_SOLVENT = addItem(60, "spray.solvent").setMaxStackSize(1)
                 .addComponents(new ColorSprayBehaviour(SPRAY_EMPTY.getStackForm(), 1024, -1));
 
-        for (int i = 0; i < EnumDyeColor.values().length; i++) {
-            SPRAY_CAN_DYES[i] = addItem(62 + i, "spray.can.dyes." + EnumDyeColor.values()[i].getName()).setMaxStackSize(1)
+        for (int i = 0; i < DyeColor.values().length; i++) {
+            SPRAY_CAN_DYES[i] = addItem(62 + i, "spray.can.dyes." + DyeColor.values()[i].getName()).setMaxStackSize(1)
                     .addComponents(new ColorSprayBehaviour(SPRAY_EMPTY.getStackForm(), 512, i));
         }
 
@@ -165,7 +167,7 @@ public class MetaItem1 extends StandardMetaItem {
                 .addComponents(new LighterBehaviour(new ResourceLocation(GTValues.MODID, "lighter_open"), true, true, true))
                 .addComponents(new FilteredFluidStats(1000, true, fs -> fs.getFluid().equals(Materials.Butane.getFluid()) || fs.getFluid().equals(Materials.Propane.getFluid())))
                 .setMaxStackSize(1)
-                .setRarity(EnumRarity.UNCOMMON);
+                .setRarity(Rarity.UNCOMMON);
 
         BOTTLE_PURPLE_DRINK = addItem(93, "bottle.purple.drink").addComponents(new FoodStats(8, 0.2F, true, true, new ItemStack(Items.GLASS_BOTTLE), new RandomPotionEffect(MobEffects.HASTE, 800, 1, 90)));
 
@@ -418,8 +420,8 @@ public class MetaItem1 extends StandardMetaItem {
         WETWARE_CIRCUIT_BOARD = addItem(407, "circuit_board.wetware");
 
         // Dyes: ID 421-436
-        for (int i = 0; i < EnumDyeColor.values().length; i++) {
-            EnumDyeColor dyeColor = EnumDyeColor.values()[i];
+        for (int i = 0; i < DyeColor.values().length; i++) {
+            DyeColor dyeColor = DyeColor.values()[i];
             DYE_ONLY_ITEMS[i] = addItem(421 + i, "dye." + dyeColor.getName()).addOreDict(getOredictColorName(dyeColor));
         }
 
@@ -636,9 +638,9 @@ public class MetaItem1 extends StandardMetaItem {
         ZERO_POINT_MODULE = addItem(752, "zpm").addComponents(ElectricStats.createBattery(2000000000000L, GTValues.ZPM, true)).setModelAmount(8);
         ULTIMATE_BATTERY = addItem(753, "max.battery").addComponents(ElectricStats.createRechargeableBattery(Long.MAX_VALUE, GTValues.UHV)).setUnificationData(OrePrefix.battery, Tier.UHV).setModelAmount(8);
 
-        POWER_THRUSTER = addItem(776, "power_thruster").setRarity(EnumRarity.UNCOMMON);
-        POWER_THRUSTER_ADVANCED = addItem(777, "power_thruster_advanced").setRarity(EnumRarity.RARE);
-        GRAVITATION_ENGINE = addItem(778, "gravitation_engine").setRarity(EnumRarity.EPIC);
+        POWER_THRUSTER = addItem(776, "power_thruster").setRarity(Rarity.UNCOMMON);
+        POWER_THRUSTER_ADVANCED = addItem(777, "power_thruster_advanced").setRarity(Rarity.RARE);
+        GRAVITATION_ENGINE = addItem(778, "gravitation_engine").setRarity(Rarity.EPIC);
 
         // Plugins: 780-799
         PLUGIN_ADVANCED_MONITOR = addItem(780, "plugin.advanced_monitor").addComponents(new AdvancedMonitorPluginBehavior());
@@ -647,7 +649,7 @@ public class MetaItem1 extends StandardMetaItem {
         PLUGIN_TEXT = addItem(783, "plugin.text").addComponents(new TextPluginBehavior());
 
         // Records: 800-819
-        SUS_RECORD = addItem(800, "record.sus").addComponents(new MusicDiscStats(GTSounds.SUS_RECORD)).setRarity(EnumRarity.RARE).setMaxStackSize(1).setInvisible();
+        SUS_RECORD = addItem(800, "record.sus").addComponents(new MusicDiscStats(GTSounds.SUS_RECORD)).setRarity(Rarity.RARE).setMaxStackSize(1).setInvisible();
 
         // Dyed Glass Lenses: 820-840
         for (int i = 0; i < MarkerMaterials.Color.VALUES.length; i++) {
@@ -658,7 +660,7 @@ public class MetaItem1 extends StandardMetaItem {
         }
 
         // Misc 1000+
-        NAN_CERTIFICATE = addItem(1000, "nan.certificate").setRarity(EnumRarity.EPIC);
+        NAN_CERTIFICATE = addItem(1000, "nan.certificate").setRarity(Rarity.EPIC);
         FERTILIZER = addItem(1001, "fertilizer").addComponents(new FertilizerBehavior());
         BLACKLIGHT = addItem(1002, "blacklight");
     }

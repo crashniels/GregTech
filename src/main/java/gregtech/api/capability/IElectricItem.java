@@ -1,8 +1,8 @@
 package gregtech.api.capability;
 
-import net.minecraft.item.ItemStack;
-
 import java.util.function.BiConsumer;
+
+import net.minecraft.world.item.ItemStack;
 
 public interface IElectricItem {
 

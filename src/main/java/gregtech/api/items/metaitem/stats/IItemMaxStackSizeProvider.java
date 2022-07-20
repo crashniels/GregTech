@@ -1,6 +1,6 @@
 package gregtech.api.items.metaitem.stats;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 @FunctionalInterface
 public interface IItemMaxStackSizeProvider extends IItemComponent {

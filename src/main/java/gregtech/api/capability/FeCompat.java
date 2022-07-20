@@ -1,7 +1,6 @@
 package gregtech.api.capability;
 
 import gregtech.common.ConfigHolder;
-import net.minecraftforge.energy.IEnergyStorage;
 
 public class FeCompat {
 
@@ -46,7 +45,7 @@ public class FeCompat {
      * Inserts energy to the storage. EU -> FE conversion is performed.
      * @return amount of EU inserted
      */
-    public static long insertEu(IEnergyStorage storage, long amountEU){
+    public static long insertEu(EnergyStorage storage, long amountEU){
         int euToFeRatio = ratio(false);
         int feSent = storage.receiveEnergy(toFe(amountEU, euToFeRatio), true);
         return toEu(storage.receiveEnergy(feSent - (feSent % euToFeRatio), false), euToFeRatio);
@@ -56,7 +55,7 @@ public class FeCompat {
      * Extracts energy from the storage. EU -> FE conversion is performed.
      * @return amount of EU extracted
      */
-    public static long extractEu(IEnergyStorage storage, long amountEU){
+    public static long extractEu(EnergyStorage storage, long amountEU){
         int euToFeRatio = ratio(false);
         int extract = storage.extractEnergy(toFe(amountEU, euToFeRatio), true);
         return toEu(storage.extractEnergy(extract - (extract % euToFeRatio), false), euToFeRatio);

@@ -13,10 +13,9 @@ import gregtech.api.unification.ore.OrePrefix;
 import gregtech.api.util.GTLog;
 import gregtech.client.renderer.handler.FacadeRenderer;
 import gregtech.common.items.armor.MetaArmor;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.item.DyeColor;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -497,8 +496,8 @@ public final class MetaItems {
     public static MetaItem<?>.MetaValueItem CAMERA;
     public static MetaItem<?>.MetaValueItem TERMINAL;
 
-    public static final MetaItem<?>.MetaValueItem[] DYE_ONLY_ITEMS = new MetaItem.MetaValueItem[EnumDyeColor.values().length];
-    public static final MetaItem<?>.MetaValueItem[] SPRAY_CAN_DYES = new MetaItem.MetaValueItem[EnumDyeColor.values().length];
+    public static final MetaItem<?>.MetaValueItem[] DYE_ONLY_ITEMS = new MetaItem.MetaValueItem[DyeColor.values().length];
+    public static final MetaItem<?>.MetaValueItem[] SPRAY_CAN_DYES = new MetaItem.MetaValueItem[DyeColor.values().length];
 
     public static MetaItem<?>.MetaValueItem TURBINE_ROTOR;
 
@@ -655,55 +654,55 @@ public final class MetaItems {
         }
     }
 
-    public static void registerOreDict() {
-        for (MetaItem<?> item : ITEMS) {
-            if (item instanceof MetaPrefixItem) {
-                ((MetaPrefixItem) item).registerOreDict();
-            }
-        }
-        for (Map.Entry<MarkerMaterial, MetaValueItem> entry : GLASS_LENSES.entrySet()) {
-            // Register "craftingLensWhite" for example
-            OreDictUnifier.registerOre(entry.getValue().getStackForm(), OrePrefix.craftingLens, entry.getKey());
-            // Register "craftingLensGlass", intended only for recipes to dye lenses and not in the Engraver
-            OreDictUnifier.registerOre(entry.getValue().getStackForm(), String.format("%s%s", OrePrefix.craftingLens.name(), "Glass"));
-        }
-    }
+    // public static void registerOreDict() {
+    //     for (MetaItem<?> item : ITEMS) {
+    //         if (item instanceof MetaPrefixItem) {
+    //             ((MetaPrefixItem) item).registerOreDict();
+    //         }
+    //     }
+    //     for (Map.Entry<MarkerMaterial, MetaValueItem> entry : GLASS_LENSES.entrySet()) {
+    //         // Register "craftingLensWhite" for example
+    //         OreDictUnifier.registerOre(entry.getValue().getStackForm(), OrePrefix.craftingLens, entry.getKey());
+    //         // Register "craftingLensGlass", intended only for recipes to dye lenses and not in the Engraver
+    //         OreDictUnifier.registerOre(entry.getValue().getStackForm(), String.format("%s%s", OrePrefix.craftingLens.name(), "Glass"));
+    //     }
+    // }
 
-    @SideOnly(Side.CLIENT)
-    public static void registerModels() {
-        MinecraftForge.EVENT_BUS.register(MetaItems.class);
-        for (MetaItem<?> item : ITEMS) {
-            item.registerModels();
-            item.registerTextureMesh();
-        }
-    }
+    // @SideOnly(Side.CLIENT)
+    // public static void registerModels() {
+    //     MinecraftForge.EVENT_BUS.register(MetaItems.class);
+    //     for (MetaItem<?> item : ITEMS) {
+    //         item.registerModels();
+    //         item.registerTextureMesh();
+    //     }
+    // }
 
-    @SideOnly(Side.CLIENT)
-    public static void registerColors() {
-        for (MetaItem<?> item : ITEMS) {
-            item.registerColor();
-        }
-    }
+    // @SideOnly(Side.CLIENT)
+    // public static void registerColors() {
+    //     for (MetaItem<?> item : ITEMS) {
+    //         item.registerColor();
+    //     }
+    // }
 
-    @SubscribeEvent
-    @SideOnly(Side.CLIENT)
-    public static void registerBakedModels(ModelBakeEvent event) {
-        GTLog.logger.info("Registering special item models");
-        registerSpecialItemModel(event, COVER_FACADE, new FacadeRenderer());
-    }
+    // @SubscribeEvent
+    // @SideOnly(Side.CLIENT)
+    // public static void registerBakedModels(ModelBakeEvent event) {
+    //     GTLog.logger.info("Registering special item models");
+    //     registerSpecialItemModel(event, COVER_FACADE, new FacadeRenderer());
+    // }
 
-    @SideOnly(Side.CLIENT)
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private static void registerSpecialItemModel(ModelBakeEvent event, MetaValueItem metaValueItem, IBakedModel bakedModel) {
-        //god these casts when intellij says you're fine but compiler complains about shit boundaries
-        //noinspection RedundantCast
-        ResourceLocation modelPath = ((MetaItem) metaValueItem.getMetaItem()).createItemModelPath(metaValueItem, "");
-        ModelResourceLocation modelResourceLocation = new ModelResourceLocation(modelPath, "inventory");
-        event.getModelRegistry().putObject(modelResourceLocation, bakedModel);
-    }
+    // @SideOnly(Side.CLIENT)
+    // @SuppressWarnings({"unchecked", "rawtypes"})
+    // private static void registerSpecialItemModel(ModelBakeEvent event, MetaValueItem metaValueItem, IBakedModel bakedModel) {
+    //     //god these casts when intellij says you're fine but compiler complains about shit boundaries
+    //     //noinspection RedundantCast
+    //     ResourceLocation modelPath = ((MetaItem) metaValueItem.getMetaItem()).createItemModelPath(metaValueItem, "");
+    //     ModelResourceLocation modelResourceLocation = new ModelResourceLocation(modelPath, "inventory");
+    //     event.getModelRegistry().putObject(modelResourceLocation, bakedModel);
+    // }
 
-    @SuppressWarnings("unused")
-    public static void addOrePrefix(OrePrefix... prefixes) {
-        orePrefixes.addAll(Arrays.asList(prefixes));
-    }
+    // @SuppressWarnings("unused")
+    // public static void addOrePrefix(OrePrefix... prefixes) {
+    //     orePrefixes.addAll(Arrays.asList(prefixes));
+    // }
 }
